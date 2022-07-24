@@ -9,12 +9,16 @@ public class Board {
   int position_in_bag;
   boolean left_player_turn;
   boolean start_of_game;
+  boolean half_start_of_game;
   boolean last_turn_skipped;
   boolean end_of_game;
   int[] character_counts = {9, 2, 2, 4, 12, 2, 3, 2, 9, 1, 1, 4, 2, 6, 8, 2, 1, 6, 4, 6, 4, 2, 2, 1, 2, 1};
+  WordCheck checker;
 
   public Board() {
+    this.checker = new WordCheck();
     this.start_of_game = true;
+    this.half_start_of_game = true;
     this.end_of_game = false;
     this.last_turn_skipped = false;
     Random r = new Random();
@@ -42,6 +46,28 @@ public class Board {
       this.pieces[i] = this.bag[i];
     }
     this.position_in_bag = 7;
+  }
+
+  public boolean makeMove(String move) {
+    if (this.end_of_game) {
+      return false;
+    }
+    if (move.trim().equals("skip")) {
+      if (this.last_turn_skipped) {
+        this.end_of_game = true;
+      } else {
+        this.last_turn_skipped = true;
+        this.left_player_turn = !this.left_player_turn;
+      }
+      return true;
+    }
+    if (move.length() < 3 || !('a' <= move.charAt(0) <= 't') || !('a' <= move.charAt(1) <= 'm') || (move.charAt(2) != 'a' && move.charAt(2) != 'd')) {
+      return false;
+    }
+    String word = move.subString(3).trim());
+    if (!this.checker.check(word) {
+      return false;
+    }
   }
 
   @Override
