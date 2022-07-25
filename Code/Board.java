@@ -3,7 +3,7 @@ import java.lang.StringBuilder;
 
 public class Board {
   char[][] board = new char[13][20];
-  char[][] ownership = new char[13][20];
+  boolean[][] left_player_owns = new boolean[13][20];
   char[] pieces = new char[7];
   char[] bag = new char[98];
   int position_in_bag;
@@ -26,7 +26,6 @@ public class Board {
     for (int i = 0; i < 13; i++) {
       for (int j = 0; j < 20; j++) {
         this.board[i][j] = ' ';
-        this.ownership[i][j] = '0';
       }
     }
     int pointer = 0;
@@ -61,12 +60,145 @@ public class Board {
       }
       return true;
     }
-    if (move.length() < 3 || !('a' <= move.charAt(0) <= 't') || !('a' <= move.charAt(1) <= 'm') || (move.charAt(2) != 'a' && move.charAt(2) != 'd')) {
+    if (move.length() < 4) {
       return false;
     }
-    String word = move.subString(3).trim());
-    if (!this.checker.check(word) {
+    char column = move.charAt(0);
+    char row = move.charAt(1);
+    char direction = move.charAt(2);
+    if (!this.tileInBounds(column, row) || (direction != 'a' && direction != 'd')) {
       return false;
+    }
+    String word = move.substring(3).trim();
+    if (!this.checker.check(word)) {
+      return false;
+    }
+    if (!this.inBounds(word.length(), column, row, direction)) {
+      return false;
+    }
+    boolean[] replacements = this.buildable(word, column, row, direction);
+    boolean flag = false;
+    for (int i = 0; i < 7; i++) {
+      if (replacements[i]) {
+        flag = true;
+        break;
+      }
+    }
+    if (!flag || !replacements[7]) {
+      return false;
+    }
+
+    //TODO
+    return false;
+  }
+
+  public boolean perimeterSafe(String word, char column, char row, char direction) {
+    int length = word.length();
+    if (direction == 'd') {
+      if (this.tileInBounds(column, (char) (row - 1))) {
+        if (this.board[row - 1 - 'a'][column - 'a'] != ' ') {
+          return false;
+        }
+      }
+      if (this.tileInBounds(column, (char) (row + length))) {
+        if (this.board[row + length - 'a'][column - 'a'] != ' ') {
+          return false;
+        }
+      }
+      for (int i = 0; i < length; i++) {
+        boolean flag = false;
+        for (int j = -1; j < 2; j += 2) {
+          if (this.tileInBounds((char) (column + j), (char) (row + i))) {
+            if (this.board[row - 'a'][column + j - 'a'] != ' ') {
+              if (this.left_player_owns[row + i - 'a'][column + j - 'a'] != this.left_player_turn) {
+                return false;
+              }
+              flag = true;
+            }
+          }
+        }
+        if (flag) {
+          StringBuilder b = new StringBuilder();
+          char c = column;
+          while (c > 'a') {
+            if (this.board[c - 'a'][row + i - 'a'] != ' ') {
+              break;
+            }
+            c--;
+          }
+          while (c <= 't') {
+            b.append(this.board[c - 'a'][row + i - 'a']);
+            if (c == 't') {
+              break;
+            }
+            if (this.board[c + 1 - 'a'][row + i - 'a'] == ' ') {
+              break;
+            }
+            c++;
+          }
+          if (!this.checker.check(b.toString())) {
+            return false;
+          }
+        }
+      }
+    } else {
+      if (this.tileInBounds((char) (column - 1), row)) {
+        if (this.board[row - 'a'][column - 1 - 'a'] != ' ') {
+          return false;
+        }
+      }
+      if (this.tileInBounds((char) (column + length), row)) {
+        if (this.board[row - 'a'][column + length - 'a'] != ' ') {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  public boolean tileInBounds(char column, char row) {
+    return 'a' <= column && column <= 't' && 'a' <= row && row <= 'm';
+  }
+
+  public boolean[] buildable(String word, char column, char row, char direction) {
+    boolean[] used = new boolean[8]; //8th bool indicates if any old tiles are used
+    for (int i = 0; i < word.length(); i++) {
+      char target;
+      char letter = word.charAt(i);
+      if (direction == 'd') {
+        target = this.board[row + i - 'a'][column - 'a'];
+      } else {
+        target = this.board[row - 'a'][column + i - 'a'];
+      }
+      if (target == ' ') {
+        boolean flag = false;
+        for (int j = 0; j < 7; j++) {
+          if (!used[j] && this.pieces[j] == letter) {
+            used[j] = true;
+            flag = true;
+            break;
+          }
+        }
+        if (!flag) {
+          return new boolean[8];
+        }
+      } else if (target != letter) {
+        return new boolean[8];
+      } else {
+        used[7] = true;
+      }
+    }
+    return used;
+  }
+
+  public boolean inBounds(int length, char column, char row, char direction) {
+    if (row < 'a' || column < 'a') {
+      return false;
+    }
+    if (direction == 'd') {
+      return row + length <= 'm';
+    } else {
+      return column + length <= 't';
     }
   }
 
