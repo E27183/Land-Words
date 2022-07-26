@@ -1,6 +1,8 @@
 import java.util.*;
 import java.io.File;
 
+//Object which loads the collins dictionary into a set and checks strings against the dictionary.
+
 public class WordCheck {
   Set<String> words;
   public WordCheck() {
@@ -17,6 +19,10 @@ public class WordCheck {
       System.out.println(e);
     }
   }
+
+  //Input: String
+  //Output: A boolean which is true if thw string is a word found in the loaded dictionary
+
   public boolean check(String word) {
     return this.words.contains(word);
   }

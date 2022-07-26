@@ -1,5 +1,8 @@
 import java.util.Scanner;
 
+//Main runnable class. Run java IO to play game.
+//Initialises the board to start the game, then reads the terminal for incoming moves as terminal inputs. Prints the board after each valid move.
+
 public class IO {
   public static void main(String[] args) {
     Scanner io = new Scanner(System.in);
