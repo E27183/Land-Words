@@ -13,6 +13,8 @@ public class Board {
   boolean end_of_game;
   int[] character_counts = {9, 2, 2, 4, 12, 2, 3, 2, 9, 1, 1, 4, 2, 6, 8, 2, 1, 6, 4, 6, 4, 2, 2, 1, 2, 1};
   WordCheck checker;
+  int left_score;
+  int right_score;
 
   public Board() {
     this.checker = new WordCheck();
@@ -29,6 +31,8 @@ public class Board {
     this.left_player_owns[6][0] = true;
     this.board[6][19] = 't';
     this.right_player_owns[6][19] = true;
+    this.left_score = 1;
+    this.right_score = 1;
     int pointer = 0;
     for (int i = 0; i < 26; i++) {
       for (int j = 0; j < this.character_counts[i]; j++) {
@@ -114,6 +118,7 @@ public class Board {
       }
     }
     this.last_turn_skipped = false;
+    this.score();
     for (int i = 0; i < 7; i++) {
       if (replacements[i]) {
         this.pieces[i] = this.bag[this.position_in_bag];
@@ -128,11 +133,27 @@ public class Board {
     return true;
   }
 
+  void score() {
+    int left = 0;
+    int right = 0;
+    for (int i = 0; i < 13; i++) {
+      for (int j = 0; j < 20; j++) {
+        if (this.left_player_owns[i][j]) {
+          left += j + 1;
+        } else if (this.right_player_owns[i][j]) {
+          right += 20 - j;
+        }
+      }
+    }
+    this.left_score = left;
+    this.right_score = right;
+  }
+
   public boolean over() {
     return this.end_of_game;
   }
 
-  public boolean perimeterSafe(String word, char column, char row, char direction) {
+  boolean perimeterSafe(String word, char column, char row, char direction) {
     int length = word.length();
     if (direction == 'd') {
       if (this.tileInBounds(column, (char) (row - 1))) {
@@ -252,11 +273,11 @@ public class Board {
     return true;
   }
 
-  public boolean tileInBounds(char column, char row) {
+  boolean tileInBounds(char column, char row) {
     return 'a' <= column && column <= 't' && 'a' <= row && row <= 'm';
   }
 
-  public boolean[] buildable(String word, char column, char row, char direction) {
+  boolean[] buildable(String word, char column, char row, char direction) {
     boolean[] used = new boolean[8]; //8th bool indicates if any old tiles are used
     for (int i = 0; i < word.length(); i++) {
       char target;
@@ -293,7 +314,7 @@ public class Board {
     return used;
   }
 
-  public boolean inBounds(int length, char column, char row, char direction) {
+  boolean inBounds(int length, char column, char row, char direction) {
     if (row < 'a' || column < 'a') {
       return false;
     }
@@ -325,7 +346,9 @@ public class Board {
       builder.append("Game is over.\n");
     }
     builder.append("Score: ");
-    //TODO
+    builder.append(String.valueOf(this.left_score));
+    builder.append(" - ");
+    builder.append(String.valueOf(this.right_score));
     builder.append("\n\n   ");
     for (int i = 0; i < 20; i++) {
       builder.append(" ");
