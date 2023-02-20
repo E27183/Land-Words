@@ -1,5 +1,7 @@
 # Land-Words
 
+Disclaimer: This was made to show off to an employer during an interview and is not intended for practical use.
+
 Basic 2 player word game played in the terminal.
 
 To play, cd into the Code folder from the terminal and run '''java IO'''
